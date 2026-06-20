@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  ============================================================
+  DESIGN TOKENS
+  ============================================================
+  Base palette (dark, default):
+    canvas        #0A0E14   page background — cold slate-black, SOC-monitor dark
+    surface       #111722   card / panel background
+    surface-hover #161D2B   hover state for surfaces
+    hairline      #1E2733   borders, dividers, grid lines
+    ink           #E4E9F2   primary text
+    ink-muted     #99A6B8   secondary text   (≈7.8:1 on canvas — WCAG AA/AAA)
+    ink-faint     #77879C   tertiary text     (≈5.3:1 on canvas — WCAG AA)
+
+  Light mode counterparts:
+    canvas        #F7F8FA
+    surface       #FFFFFF
+    hairline      #E3E7EC
+    ink           #0F1419
+    ink-muted     #65707D   (≈5.8:1 on canvas — WCAG AA)
+    ink-faint     #657286   (≈4.6:1 on canvas — WCAG AA)
+
+  Lens accent system (the signature element — swaps via [data-lens] on <html>):
+    AI lens        #7C9CFF (dark) / #4756C9 (light)  — neural / machine learning
+    Cybersecurity  #00E5A0 (dark) / #0B7A55 (light)  — SOC dashboards, packet captures
+    Data Analysis  #FFB454 (dark) / #914D08 (light)  — charts, highlighted data points
+
+  Light-mode track colors are deliberately darker/more saturated than their
+  dark-mode counterparts — used as *text* against a near-white canvas, the
+  original lighter values (e.g. cyber at L45%, data at L48%) measured under
+  4.5:1 contrast and failed WCAG AA. Verified via relative-luminance contrast
+  ratio, not eyeballed.
+
+  These three are also exposed as static --track-* tokens so project tags
+  keep their track color even when a *different* lens is active.
+  ============================================================
+*/
+
+@layer base {
+  :root {
+    --canvas: 220 26% 6%;
+    --surface: 222 24% 9%;
+    --surface-hover: 220 24% 12%;
+    --hairline: 217 20% 14%;
+    --ink: 218 33% 92%;
+    --ink-muted: 215 18% 66%;
+    --ink-faint: 215 14% 54%;
+    --ring: 220 100% 70%;
+
+    /* static track colors (always available regardless of active lens) */
+    --track-ai: 230 100% 73%;
+    --track-cyber: 160 100% 45%;
+    --track-data: 36 100% 65%;
+
+    /* default active lens = AI */
+    --lens-accent: var(--track-ai);
+    --lens-accent-foreground: 222 24% 9%;
+  }
+
+  .light {
+    --canvas: 210 20% 98%;
+    --surface: 0 0% 100%;
+    --surface-hover: 210 20% 96%;
+    --hairline: 214 18% 89%;
+    --ink: 220 39% 8%;
+    --ink-muted: 215 14% 40%;
+    --ink-faint: 215 14% 46%;
+    --ring: 220 90% 56%;
+
+    --track-ai: 230 85% 58%;
+    --track-cyber: 160 84% 26%;
+    --track-data: 30 90% 30%;
+
+    --lens-accent-foreground: 0 0% 100%;
+  }
+
+  /* Lens switching — re-tints the whole page's accent in real time */
+  [data-lens="ai"] {
+    --lens-accent: var(--track-ai);
+  }
+  [data-lens="cyber"] {
+    --lens-accent: var(--track-cyber);
+  }
+  [data-lens="data"] {
+    --lens-accent: var(--track-data);
+  }
+  .light[data-lens="ai"] { --lens-accent-foreground: 0 0% 100%; }
+  .light[data-lens="cyber"] { --lens-accent-foreground: 0 0% 100%; }
+  .light[data-lens="data"] { --lens-accent-foreground: 0 0% 100%; }
+
+  * {
+    @apply border-hairline;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Accent-bearing elements transition smoothly when the lens changes */
+  .lens-transition {
+    transition: color 0.4s ease, background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  ::selection {
+    background-color: hsl(var(--lens-accent) / 0.3);
+  }
+
+  /* Visible keyboard focus everywhere — accessibility floor */
+  :focus-visible {
+    outline: 2px solid hsl(var(--lens-accent));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-wide {
+    @apply mx-auto max-w-6xl px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-20 sm:py-28;
+  }
+
+  .eyebrow {
+    @apply font-mono text-eyebrow uppercase text-lens lens-transition;
+  }
+
+  .card-surface {
+    @apply rounded-lg border border-hairline bg-surface;
+  }
+}
